@@ -10,9 +10,9 @@ In: Annals of Applied Statistics (accepted for publication) [[arXiv preprint]](h
 * Please cite our paper if you use or modify our code for your own work.
 
 ## Requirements and Usage
-* TODO
+Please refer to the Jupyter notebooks for a complete list of requirements and a demo.
 
 ## License
 
-The code is released under the MIT license.
+The source codes are released under the MIT license. The data in `twitter-volume.csv` was obtained via the ForSight platform from Crimson Hexagon ([Brandwatch](https://www.brandwatch.com/)).
 
