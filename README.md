@@ -14,4 +14,5 @@ In: Annals of Applied Statistics (accepted for publication) [[arXiv preprint]](h
 
 ## License
 
-* TODO
+The code is released under the MIT license.
+
