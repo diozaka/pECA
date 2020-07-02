@@ -18,10 +18,6 @@ def tcp(X, E, delta, taus):
         K_tr[i] = len([t for t in range(T-delta) if (E[t] == 1) and np.sum(A[t:t+delta+1]) >= 1])
     return K_tr
 
-#def trigger_coincidences_pval(K_tr, N_E, pi):
-#    """Compute the p-value for a single number of trigger coincidences K_tr."""
-#    return ss.binom.pmf(K_tr, N_E, pi) + ss.binom.sf(K_tr, N_E, pi)
-
 def _fit_gev_blockmaxima(X, blocksize):
     """Fit the parameters of the GEV distribution to block maxima of X.
 
