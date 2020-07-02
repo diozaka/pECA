@@ -4,13 +4,16 @@ Contains functions to compute and estimate trigger coincidence processes (TCPs) 
 study the association between event series and peaks in a time series.
 """
 
+from typing import Tuple
 from numba import njit
 import numpy as np
 import scipy.stats as ss
 
+TCPParamType = Tuple[np.ndarray, np.ndarray]
+
 @njit
-def tcp(X, E, delta, taus):
-    """Compute the TCP K_{tr}^{delta,taus}(E, X) and return as np.array."""
+def tcp(X: np.ndarray, E: np.ndarray, delta: int, taus: np.ndarray) -> np.ndarray:
+    """Compute the TCP K_{tr}^{delta,taus}(E, X)."""
     T = min(len(X), len(E))
     K_tr = np.zeros_like(taus)
     for i, tau in enumerate(taus):
@@ -18,7 +21,7 @@ def tcp(X, E, delta, taus):
         K_tr[i] = len([t for t in range(T-delta) if (E[t] == 1) and np.sum(A[t:t+delta+1]) >= 1])
     return K_tr
 
-def _fit_gev_blockmaxima(X, blocksize):
+def _fit_gev_blockmaxima(X: np.ndarray, blocksize: int) -> Tuple:
     """Fit the parameters of the GEV distribution to block maxima of X.
 
     X is first split into blocks of size blocksize and the GEV distribution
@@ -29,7 +32,7 @@ def _fit_gev_blockmaxima(X, blocksize):
     gev_params = ss.genextreme.fit(Mk)
     return gev_params
 
-def tcp_params_fit(X, delta, taus):
+def tcp_params_fit(X: np.ndarray, delta: int, taus: np.ndarray) -> TCPParamType:
     """Fit the parameters of the TCP Markov model to X for the given taus and delta.
 
     The Markov model has two sets of parameters: the marginal probabilities P(K_{tr}^{delta,tau})
@@ -42,18 +45,18 @@ def tcp_params_fit(X, delta, taus):
     tcp_params = (ps_marginal, ps_conditional)
     return tcp_params
 
-def tcp_marginal_expectation(N_E, tcp_params):
+def tcp_marginal_expectation(N_E: int, tcp_params: TCPParamType) -> np.ndarray:
     """Compute the marginally expected TCP for an independent event series with N_E events.
 
     The marginally expected TCP contains all pointwise expected values for each threshold.
     """
     return tcp_params[0]*N_E
 
-def tcp_marginal_pval(K_tr, N_E, tcp_params):
+def tcp_marginal_pval(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType) -> np.ndarray:
     """Compute the marginal p-values for the TCP K_tr under the independence assumption."""
     return ss.binom.pmf(K_tr, N_E, tcp_params[0]) + ss.binom.sf(K_tr, N_E, tcp_params[0])
 
-def tcp_nll(K_tr, N_E, tcp_params, idx_start=0):
+def tcp_nll(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType, idx_start=0) -> np.ndarray:
     """Compute the negative log-likelihood for the TCP K_tr under the independence assumption.
 
     N_E denotes the total number of event occurrences in the event series E and tcp_params must
