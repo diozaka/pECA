@@ -7,10 +7,16 @@ In: Annals of Applied Statistics (accepted for publication) [[arXiv preprint]](h
 ## Contact and Citation
 
 * Corresponding author: [Erik Scharwächter](mailto:scharwaechter@bit-uni-bonn.de)
-* Please cite our paper if you use or modify our code for your own work.
+* Please cite our paper if you use or modify our code for your own work.  
 
 ## Requirements and Usage
-Please refer to the Jupyter notebooks for a complete list of requirements and a demo.
+
+The `peca` module itself requires `numba`, `numpy` and `scipy`. The Jupyter notebooks to reproduce our results additionally require `statsmodels`, `matplotlib`, `pandas` and `tqdm`. All requirements can be found in [the requirements file](./requirements.txt). Please check the module documentation for usage instructions:
+
+```python
+import peca
+help(peca)
+```
 
 ## License
 
