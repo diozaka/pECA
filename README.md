@@ -31,5 +31,5 @@ help(peca)
 
 ## License
 
-The source codes are released under the MIT license. The data in `twitter-volume.csv` was obtained via the ForSight platform from Crimson Hexagon ([Brandwatch](https://www.brandwatch.com/)).
+The source codes are released under the [MIT license](./LICENSE). The data in `twitter-volume.csv` was obtained via the ForSight platform from Crimson Hexagon ([Brandwatch](https://www.brandwatch.com/)).
 
