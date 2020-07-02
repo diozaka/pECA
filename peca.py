@@ -56,7 +56,7 @@ def tcp_marginal_pval(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType) -> n
     """Compute the marginal p-values for the TCP K_tr under the independence assumption."""
     return ss.binom.pmf(K_tr, N_E, tcp_params[0]) + ss.binom.sf(K_tr, N_E, tcp_params[0])
 
-def tcp_nll(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType, idx_start=0) -> np.ndarray:
+def tcp_nll(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType, idx_start: int = 0) -> np.ndarray:
     """Compute the negative log-likelihood for the TCP K_tr under the independence assumption.
 
     N_E denotes the total number of event occurrences in the event series E and tcp_params must
