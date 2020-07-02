@@ -1,7 +1,25 @@
 """Peak Event Coincidence Analysis (pECA).
 
-Contains functions to compute and estimate trigger coincidence processes (TCPs) to
-study the association between event series and peaks in a time series.
+This module contains functions to compute and estimate trigger coincidence processes (TCPs)
+to study the association between event series and peaks in a time series.
+
+Example:
+    The time series X is a real-valued np.ndarray of shape (T,), the event series is binary
+    np.ndarray (with values 0 or 1 only) of the same shape.
+
+        # set time tolerance and sequence of thresholds
+        delta = 7
+        taus = np.array([2.,3.,4.])
+
+        # compute the observed trigger coincidence process (TCP)
+        K_tr = tcp(X, E, delta, taus)
+
+        # estimate the parameters of the TCP under the independence assumption
+        tcp_params = tcp_params_fit(X, delta, taus)
+
+        # compute the p-value for the observed TCP under the independence assumption
+        pval = tcp_marginal_pval(K_tr, E.sum(), tcp_params)
+
 """
 
 from typing import Tuple
