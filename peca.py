@@ -150,7 +150,7 @@ def tcp_nll(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType, idx_start: int
                      for i in range(idx_start+1, len(ps_marginal))]))
 
 def tcp_nll_pval_shuffle(X: np.ndarray, E: np.ndarray, delta: int, taus: np.ndarray,
-        samples: int = 10000, idx_start: int = 0) -> float:
+        samples: int = 10000, idx_start: int = 0) -> Tuple[float, float]:
     """Compute a Monte Carlo p-value from random permutations using the NLL as the test statistic.
 
     Args:
