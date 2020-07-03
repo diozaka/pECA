@@ -4,21 +4,30 @@ This module contains functions to compute and estimate trigger coincidence proce
 to study the association between event series and peaks in a time series.
 
 Example:
-    The time series X is a real-valued np.ndarray of shape (T,), the event series is binary
-    np.ndarray (with values 0 or 1 only) of the same shape.
+    The time series X is a real-valued np.ndarray of shape (T,), the event series
+    is a binary np.ndarray (with values 0 or 1 only) of the same shape.
 
         # set time tolerance and sequence of thresholds
         delta = 7
         taus = np.array([2.,3.,4.])
 
+        # estimate the parameters of the TCP under the independence assumption
+        # NOTE: the parameters depend only on X, not on E
+        tcp_params = tcp_params_fit(X, delta, taus)
+
         # compute the observed trigger coincidence process (TCP)
         K_tr = tcp(X, E, delta, taus)
 
-        # estimate the parameters of the TCP under the independence assumption
-        tcp_params = tcp_params_fit(X, delta, taus)
+        # compute the marginal p-values for the observed TCP under the
+        # independence assumption
+        pvals = tcp_marginal_pval(K_tr, E.sum(), tcp_params)
+        for (t, k, p) in zip(taus, K_tr, pvals):
+            print(f"tau={t:.2f} k={k:.0f} p={p:.4f}")
 
-        # compute the p-value for the observed TCP under the independence assumption
-        pval = tcp_marginal_pval(K_tr, E.sum(), tcp_params)
+        # compute a Monte Carlo p-value for the complete TCP, using
+        # the negative log-likelihood (NLL) as the test statistic
+        pval, nll = tcp_nll_pval_shuffle(X, E, delta, taus)
+        print(f"TCP {K_tr} nll={nll:.2f} p={pval:.4f}")
 
 """
 
@@ -121,7 +130,7 @@ def tcp_marginal_pval(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType) -> n
     return ss.binom.pmf(K_tr, N_E, tcp_params[0]) + ss.binom.sf(K_tr, N_E, tcp_params[0])
 
 def tcp_nll(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType, idx_start: int = 0) -> float:
-    """Compute the negative log-likelihood for the TCP K_tr under the independence assumption.
+    """Compute the negative log-likelihood (NLL) for the TCP K_tr under the independence assumption.
 
     The TCP can be evaluated only at higher thresholds by setting idx_start > 0.
 
@@ -139,4 +148,31 @@ def tcp_nll(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType, idx_start: int
     return -(ss.binom.logpmf(K_tr[idx_start], N_E, ps_marginal[idx_start])
        + np.sum([ss.binom.logpmf(K_tr[i], K_tr[i-1], ps_conditional[i])
                      for i in range(idx_start+1, len(ps_marginal))]))
+
+def tcp_nll_pval_shuffle(X: np.ndarray, E: np.ndarray, delta: int, taus: np.ndarray,
+        samples: int = 10000, idx_start: int = 0) -> float:
+    """Compute a Monte Carlo p-value from random permutations using the NLL as the test statistic.
+
+    Args:
+        X: Time series.
+        E: Event series.
+        delta: Time tolerance.
+        taus: Thresholds (strictly increasing).
+        samples: Number of Monte Carlo samples.
+        idx_start: Index of the first threshold to evaluate. Defaults to 0.
+
+    Returns:
+        Tuple with the p-value and the test statistic value.
+
+    """
+    N_E = E.sum()
+    tcp_params = tcp_params_fit(X, delta, taus)
+    nll = tcp_nll(tcp(X, E, delta, taus), N_E, tcp_params, idx_start)
+    ge = 0
+    for s in range(samples):
+        simul_E = np.random.permutation(E)
+        simul_nll = tcp_nll(tcp(X, simul_E, delta, taus), N_E, tcp_params, idx_start)
+        ge += (simul_nll >= nll)
+    pval = (ge+1)/(samples+1)
+    return pval, nll
 
