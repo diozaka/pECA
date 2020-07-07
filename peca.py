@@ -96,7 +96,7 @@ def tcp_params_fit(X: np.ndarray, delta: int, taus: np.ndarray) -> TCPParamType:
     gev_params = _fit_gev_blockmaxima(X, delta+1)
     ps_marginal = np.array([1.-ss.genextreme.cdf(tau, *gev_params) for tau in taus])
     ps_conditional = np.ones_like(taus)*np.nan
-    ps_conditional[1:] = np.array([ps_marginal[i]/ps_marginal[i-1] for i in range(1,len(taus))])
+    ps_conditional[1:] = np.array([ps_marginal[i]/ps_marginal[i-1] for i in range(1, len(taus))])
     tcp_params = (ps_marginal, ps_conditional)
     return tcp_params
 
@@ -144,13 +144,13 @@ def tcp_nll(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType, idx_start: int
         The negative log-likelihood.
 
     """
-    ps_marginal, ps_conditional  = tcp_params
+    ps_marginal, ps_conditional = tcp_params
     return -(ss.binom.logpmf(K_tr[idx_start], N_E, ps_marginal[idx_start])
-       + np.sum([ss.binom.logpmf(K_tr[i], K_tr[i-1], ps_conditional[i])
-                     for i in range(idx_start+1, len(ps_marginal))]))
+             + np.sum([ss.binom.logpmf(K_tr[i], K_tr[i-1], ps_conditional[i])
+                       for i in range(idx_start+1, len(ps_marginal))]))
 
 def tcp_nll_pval_shuffle(X: np.ndarray, E: np.ndarray, delta: int, taus: np.ndarray,
-        samples: int = 10000, idx_start: int = 0) -> Tuple[float, float]:
+                         samples: int = 10000, idx_start: int = 0) -> Tuple[float, float]:
     """Compute a Monte Carlo p-value from random permutations using the NLL as the test statistic.
 
     Args:
@@ -175,4 +175,3 @@ def tcp_nll_pval_shuffle(X: np.ndarray, E: np.ndarray, delta: int, taus: np.ndar
         ge += (simul_nll >= nll)
     pval = (ge+1)/(samples+1)
     return pval, nll
-
