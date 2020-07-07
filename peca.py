@@ -38,8 +38,10 @@ import scipy.stats as ss
 
 TCPParamType = Tuple[np.ndarray, np.ndarray]
 
+
 @njit
-def tcp(X: np.ndarray, E: np.ndarray, delta: int, taus: np.ndarray) -> np.ndarray:
+def tcp(X: np.ndarray, E: np.ndarray, delta: int,
+        taus: np.ndarray) -> np.ndarray:
     """Compute the TCP K_{tr}^{delta,taus}(E, X).
 
     Args:
@@ -55,9 +57,13 @@ def tcp(X: np.ndarray, E: np.ndarray, delta: int, taus: np.ndarray) -> np.ndarra
     T = min(len(X), len(E))
     K_tr = np.zeros_like(taus)
     for i, tau in enumerate(taus):
-        A = (X > tau)*1
-        K_tr[i] = len([t for t in range(T-delta) if (E[t] == 1) and np.sum(A[t:t+delta+1]) >= 1])
+        A = (X > tau) * 1
+        K_tr[i] = len([
+            t for t in range(T - delta)
+            if (E[t] == 1) and np.sum(A[t:t + delta + 1]) >= 1
+        ])
     return K_tr
+
 
 def _fit_gev_blockmaxima(X: np.ndarray, blocksize: int) -> Tuple:
     """Fit the parameters of the GEV distribution to block maxima of X.
@@ -73,12 +79,14 @@ def _fit_gev_blockmaxima(X: np.ndarray, blocksize: int) -> Tuple:
         All GEV parameters as returned by ss.genextreme.fit().
 
     """
-    T = len(X) - (len(X)%blocksize) # ignore remainder
-    Mk = np.array([X[t:t+blocksize].max() for t in range(0, T, blocksize)])
+    T = len(X) - (len(X) % blocksize)  # ignore remainder
+    Mk = np.array([X[t:t + blocksize].max() for t in range(0, T, blocksize)])
     gev_params = ss.genextreme.fit(Mk)
     return gev_params
 
-def tcp_params_fit(X: np.ndarray, delta: int, taus: np.ndarray) -> TCPParamType:
+
+def tcp_params_fit(X: np.ndarray, delta: int,
+                   taus: np.ndarray) -> TCPParamType:
     """Fit the parameters of the TCP Markov model to X for the given taus and delta.
 
     The Markov model has two sets of parameters: the marginal probabilities P(K_{tr}^{delta,tau})
@@ -93,12 +101,15 @@ def tcp_params_fit(X: np.ndarray, delta: int, taus: np.ndarray) -> TCPParamType:
         Tuple with all TCP parameters (marginal and conditional probabilities).
 
     """
-    gev_params = _fit_gev_blockmaxima(X, delta+1)
-    ps_marginal = np.array([1.-ss.genextreme.cdf(tau, *gev_params) for tau in taus])
-    ps_conditional = np.ones_like(taus)*np.nan
-    ps_conditional[1:] = np.array([ps_marginal[i]/ps_marginal[i-1] for i in range(1, len(taus))])
+    gev_params = _fit_gev_blockmaxima(X, delta + 1)
+    ps_marginal = np.array(
+        [1. - ss.genextreme.cdf(tau, *gev_params) for tau in taus])
+    ps_conditional = np.ones_like(taus) * np.nan
+    ps_conditional[1:] = np.array(
+        [ps_marginal[i] / ps_marginal[i - 1] for i in range(1, len(taus))])
     tcp_params = (ps_marginal, ps_conditional)
     return tcp_params
+
 
 def tcp_marginal_expectation(N_E: int, tcp_params: TCPParamType) -> np.ndarray:
     """Compute the marginally expected TCP for an independent event series with N_E events.
@@ -113,9 +124,11 @@ def tcp_marginal_expectation(N_E: int, tcp_params: TCPParamType) -> np.ndarray:
         The marginal expectations.
 
     """
-    return tcp_params[0]*N_E
+    return tcp_params[0] * N_E
 
-def tcp_marginal_pval(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType) -> np.ndarray:
+
+def tcp_marginal_pval(K_tr: np.ndarray, N_E: int,
+                      tcp_params: TCPParamType) -> np.ndarray:
     """Compute the marginal p-values for the TCP K_tr under the independence assumption.
 
     Args:
@@ -127,9 +140,14 @@ def tcp_marginal_pval(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType) -> n
         The marginal p-values.
 
     """
-    return ss.binom.pmf(K_tr, N_E, tcp_params[0]) + ss.binom.sf(K_tr, N_E, tcp_params[0])
+    return ss.binom.pmf(K_tr, N_E, tcp_params[0]) + ss.binom.sf(
+        K_tr, N_E, tcp_params[0])
 
-def tcp_nll(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType, idx_start: int = 0) -> float:
+
+def tcp_nll(K_tr: np.ndarray,
+            N_E: int,
+            tcp_params: TCPParamType,
+            idx_start: int = 0) -> float:
     """Compute the negative log-likelihood (NLL) for the TCP K_tr under the independence assumption.
 
     The TCP can be evaluated only at higher thresholds by setting idx_start > 0.
@@ -145,12 +163,19 @@ def tcp_nll(K_tr: np.ndarray, N_E: int, tcp_params: TCPParamType, idx_start: int
 
     """
     ps_marginal, ps_conditional = tcp_params
-    return -(ss.binom.logpmf(K_tr[idx_start], N_E, ps_marginal[idx_start])
-             + np.sum([ss.binom.logpmf(K_tr[i], K_tr[i-1], ps_conditional[i])
-                       for i in range(idx_start+1, len(ps_marginal))]))
+    return -(ss.binom.logpmf(K_tr[idx_start], N_E, ps_marginal[idx_start]) +
+             np.sum([
+                 ss.binom.logpmf(K_tr[i], K_tr[i - 1], ps_conditional[i])
+                 for i in range(idx_start + 1, len(ps_marginal))
+             ]))
 
-def tcp_nll_pval_shuffle(X: np.ndarray, E: np.ndarray, delta: int, taus: np.ndarray,
-                         samples: int = 10000, idx_start: int = 0) -> Tuple[float, float]:
+
+def tcp_nll_pval_shuffle(X: np.ndarray,
+                         E: np.ndarray,
+                         delta: int,
+                         taus: np.ndarray,
+                         samples: int = 10000,
+                         idx_start: int = 0) -> Tuple[float, float]:
     """Compute a Monte Carlo p-value from random permutations using the NLL as the test statistic.
 
     Args:
@@ -171,7 +196,8 @@ def tcp_nll_pval_shuffle(X: np.ndarray, E: np.ndarray, delta: int, taus: np.ndar
     ge = 0
     for s in range(samples):
         simul_E = np.random.permutation(E)
-        simul_nll = tcp_nll(tcp(X, simul_E, delta, taus), N_E, tcp_params, idx_start)
+        simul_nll = tcp_nll(tcp(X, simul_E, delta, taus), N_E, tcp_params,
+                            idx_start)
         ge += (simul_nll >= nll)
-    pval = (ge+1)/(samples+1)
+    pval = (ge + 1) / (samples + 1)
     return pval, nll
