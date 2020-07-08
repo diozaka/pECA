@@ -45,21 +45,15 @@ import numpy as np
 import scipy.stats as ss
 
 __all__ = [
-    "tcp",
-    "tcp_params_fit",
-    "tcp_marginal_expectation",
-    "tcp_marginal_pval",
-    "tcp_nll",
-    "tcp_nll_pval_shuffle"
+    "tcp", "tcp_params_fit", "tcp_marginal_expectation", "tcp_marginal_pval",
+    "tcp_nll", "tcp_nll_pval_shuffle"
 ]
 
 TCPParamType = Tuple[np.ndarray, np.ndarray]
 
 
 @numba.njit
-def tcp(timeseries: np.ndarray,
-        eventseries: np.ndarray,
-        delta: int,
+def tcp(timeseries: np.ndarray, eventseries: np.ndarray, delta: int,
         taus: np.ndarray) -> np.ndarray:
     """Compute the TCP K_{tr}^{delta,taus}(E, X).
 
@@ -107,10 +101,8 @@ def _fit_gev_blockmaxima(timeseries: np.ndarray, blocksize: int) -> Tuple:
     return ss.genextreme.fit(blockmaxima)
 
 
-def tcp_params_fit(
-        timeseries: np.ndarray,
-        delta: int,
-        taus: np.ndarray) -> TCPParamType:
+def tcp_params_fit(timeseries: np.ndarray, delta: int,
+                   taus: np.ndarray) -> TCPParamType:
     """Fit the parameters of the TCP Markov model to timeseries.
 
     The Markov model has two sets of parameters: the marginal
@@ -136,9 +128,8 @@ def tcp_params_fit(
     return tcp_params
 
 
-def tcp_marginal_expectation(
-        n_events: int,
-        tcp_params: TCPParamType) -> np.ndarray:
+def tcp_marginal_expectation(n_events: int,
+                             tcp_params: TCPParamType) -> np.ndarray:
     """Compute the marginally expected TCP for independent event series.
 
     The marginally expected TCP contains all pointwise expected values
@@ -155,10 +146,8 @@ def tcp_marginal_expectation(
     return tcp_params[0] * n_events
 
 
-def tcp_marginal_pval(
-        tcp_: np.ndarray,
-        n_events: int,
-        tcp_params: TCPParamType) -> np.ndarray:
+def tcp_marginal_pval(tcp_: np.ndarray, n_events: int,
+                      tcp_params: TCPParamType) -> np.ndarray:
     """Compute marginal p-values for the TCP under independence.
 
     Args:
@@ -170,8 +159,8 @@ def tcp_marginal_pval(
         The marginal p-values.
 
     """
-    return (ss.binom.pmf(tcp_, n_events, tcp_params[0])
-            + ss.binom.sf(tcp_, n_events, tcp_params[0]))
+    return (ss.binom.pmf(tcp_, n_events, tcp_params[0]) +
+            ss.binom.sf(tcp_, n_events, tcp_params[0]))
 
 
 def tcp_nll(tcp_: np.ndarray,
@@ -195,8 +184,8 @@ def tcp_nll(tcp_: np.ndarray,
 
     """
     ps_marginal, ps_conditional = tcp_params
-    return -(ss.binom.logpmf(tcp_[idx_start], n_events, ps_marginal[idx_start]) +
-             np.sum([
+    return -(ss.binom.logpmf(tcp_[idx_start], n_events, ps_marginal[idx_start])
+             + np.sum([
                  ss.binom.logpmf(tcp_[i], tcp_[i - 1], ps_conditional[i])
                  for i in range(idx_start + 1, len(ps_marginal))
              ]))
@@ -228,8 +217,8 @@ def tcp_nll_pval_shuffle(timeseries: np.ndarray,
     """
     n_events = eventseries.sum()
     tcp_params = tcp_params_fit(timeseries, delta, taus)
-    nll = tcp_nll(tcp(timeseries, eventseries, delta, taus),
-                  n_events, tcp_params, idx_start)
+    nll = tcp_nll(tcp(timeseries, eventseries, delta, taus), n_events,
+                  tcp_params, idx_start)
     greater_or_equal = 0
     for _ in range(samples):
         simul_eventseries = np.random.permutation(eventseries)
