@@ -20,14 +20,22 @@ We provide a simple Python module ([peca.py](./peca.py)) that can be used to app
 }
 ```
 
-## Requirements and Usage
+## Installation and Usage
 
-The `peca` module itself requires `numba`, `numpy` and `scipy`. The Jupyter notebooks to reproduce our results additionally require `statsmodels`, `matplotlib`, `pandas` and `tqdm`. All requirements can be found in [the requirements file](./requirements.txt). Please check the module documentation for usage instructions:
+The `peca` module itself requires `numba`, `numpy` and `scipy`. You can directly install the standalone module from GitHub with pip3:
+
+```bash
+$ pip3 install git+https://github.com/diozaka/pECA
+```
+
+After installation, please check the module documentation for usage instructions:
 
 ```python
-import peca
-help(peca)
+>>> import peca
+>>> help(peca)
 ```
+
+The Jupyter notebooks to reproduce our results additionally require `statsmodels`, `matplotlib`, `pandas` and `tqdm`. 
 
 ## License
 
