@@ -73,7 +73,7 @@ def tcp(timeseries: np.ndarray, eventseries: np.ndarray, delta: int,
         tes = (timeseries > tau) * 1  # threshold exceedance series
         tcp_[i] = len([
             t for t in range(length - delta)
-            if (eventseries[t] == 1) and np.sum(tes[t:t + delta + 1]) >= 1
+            if (eventseries[t] == 1) and np.sum(tes[t:(t + delta + 1)]) >= 1
         ])
     return tcp_
 
