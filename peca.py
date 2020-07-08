@@ -15,33 +15,34 @@ Example:
 
         # Estimate the parameters of the TCP under the independence
         # assumption. NOTE: The parameters depend only on X, not on E.
-        tcp_params = tcp_params_fit(X, delta, taus)
+        tcp_params = peca.tcp_params_fit(X, delta, taus)
 
         # Compute the observed trigger coincidence process (TCP).
-        K_tr = tcp(X, E, delta, taus)
+        K_tr = peca.tcp(X, E, delta, taus)
 
         # Compute the marginal p-values for the observed TCP under the
         # independence assumption.
-        pvals = tcp_marginal_pval(K_tr, E.sum(), tcp_params)
+        pvals = peca.tcp_marginal_pval(K_tr, E.sum(), tcp_params)
         for (t, k, p) in zip(taus, K_tr, pvals):
             print(f"tau={t:.2f} k={k:.0f} p={p:.4f}")
 
         # compute a Monte Carlo p-value for the complete TCP, using
         # the negative log-likelihood (NLL) as the test statistic
-        pval, nll = tcp_nll_pval_shuffle(X, E, delta, taus)
+        pval, nll = peca.tcp_nll_pval_shuffle(X, E, delta, taus)
         print(f"TCP {K_tr} nll={nll:.2f} p={pval:.4f}")
 
 """
 
 from typing import Tuple
-from numba import njit
+
+import numba
 import numpy as np
 import scipy.stats as ss
 
 TCPParamType = Tuple[np.ndarray, np.ndarray]
 
 
-@njit
+@numba.njit
 def tcp(X: np.ndarray, E: np.ndarray, delta: int,
         taus: np.ndarray) -> np.ndarray:
     """Compute the TCP K_{tr}^{delta,taus}(E, X).
