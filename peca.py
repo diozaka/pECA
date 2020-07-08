@@ -1,25 +1,27 @@
 """Peak Event Coincidence Analysis (pECA).
 
-This module contains functions to compute and estimate trigger coincidence processes (TCPs)
-to study the association between event series and peaks in a time series.
+This module contains functions to compute and estimate trigger
+coincidence processes (TCPs) to study the association between event
+series and peaks in a time series.
 
 Example:
-    The time series X is a real-valued np.ndarray of shape (T,), the event series
-    is a binary np.ndarray (with values 0 or 1 only) of the same shape.
+    The time series X is a real-valued np.ndarray of shape (T,), the
+    event series is a binary np.ndarray (with values 0 or 1 only) of
+    the same shape.
 
-        # set time tolerance and sequence of thresholds
+        # Set time tolerance and sequence of thresholds.
         delta = 7
         taus = np.array([2.,3.,4.])
 
-        # estimate the parameters of the TCP under the independence assumption
-        # NOTE: the parameters depend only on X, not on E
+        # Estimate the parameters of the TCP under the independence
+        # assumption. NOTE: The parameters depend only on X, not on E.
         tcp_params = tcp_params_fit(X, delta, taus)
 
-        # compute the observed trigger coincidence process (TCP)
+        # Compute the observed trigger coincidence process (TCP).
         K_tr = tcp(X, E, delta, taus)
 
-        # compute the marginal p-values for the observed TCP under the
-        # independence assumption
+        # Compute the marginal p-values for the observed TCP under the
+        # independence assumption.
         pvals = tcp_marginal_pval(K_tr, E.sum(), tcp_params)
         for (t, k, p) in zip(taus, K_tr, pvals):
             print(f"tau={t:.2f} k={k:.0f} p={p:.4f}")
@@ -68,8 +70,8 @@ def tcp(X: np.ndarray, E: np.ndarray, delta: int,
 def _fit_gev_blockmaxima(X: np.ndarray, blocksize: int) -> Tuple:
     """Fit the parameters of the GEV distribution to block maxima of X.
 
-    X is first split into blocks of size blocksize and the GEV distribution
-    is fitted to the maxima of these blocks.
+    X is first split into blocks of size blocksize and the GEV
+    distribution is fitted to the maxima of these blocks.
 
     Args:
         X: Time series.
@@ -87,10 +89,11 @@ def _fit_gev_blockmaxima(X: np.ndarray, blocksize: int) -> Tuple:
 
 def tcp_params_fit(X: np.ndarray, delta: int,
                    taus: np.ndarray) -> TCPParamType:
-    """Fit the parameters of the TCP Markov model to X for the given taus and delta.
+    """Fit the parameters of the TCP Markov model to X.
 
-    The Markov model has two sets of parameters: the marginal probabilities P(K_{tr}^{delta,tau})
-    and the conditional probabilities P(K_{tr}^{delta,tau_{i}} | K_{tr}^{delta,tau_{i-1}}).
+    The Markov model has two sets of parameters: the marginal
+    probabilities P(K_{tr}^{delta,tau}) and the conditional
+    probabilities P(K_{tr}^{delta,tau_{i}} | K_{tr}^{delta,tau_{i-1}}).
 
     Args:
         X: Time series.
@@ -98,7 +101,7 @@ def tcp_params_fit(X: np.ndarray, delta: int,
         taus: Thresholds (strictly increasing).
 
     Returns:
-        Tuple with all TCP parameters (marginal and conditional probabilities).
+        Tuple with all TCP parameters (marginals and conditionals).
 
     """
     gev_params = _fit_gev_blockmaxima(X, delta + 1)
@@ -112,13 +115,14 @@ def tcp_params_fit(X: np.ndarray, delta: int,
 
 
 def tcp_marginal_expectation(N_E: int, tcp_params: TCPParamType) -> np.ndarray:
-    """Compute the marginally expected TCP for an independent event series with N_E events.
+    """Compute the marginally expected TCP for independent event series.
 
-    The marginally expected TCP contains all pointwise expected values for each threshold.
+    The marginally expected TCP contains all pointwise expected values
+    for each threshold.
 
     Args:
-        N_E: Number of events in the event series.
-        tcp_params: Tuple with all TCP parameters
+        N_E: Number of events in the independent event series.
+        tcp_params: Tuple with all TCP parameters.
 
     Returns:
         The marginal expectations.
@@ -129,7 +133,7 @@ def tcp_marginal_expectation(N_E: int, tcp_params: TCPParamType) -> np.ndarray:
 
 def tcp_marginal_pval(K_tr: np.ndarray, N_E: int,
                       tcp_params: TCPParamType) -> np.ndarray:
-    """Compute the marginal p-values for the TCP K_tr under the independence assumption.
+    """Compute marginal p-values for the TCP under independence.
 
     Args:
         K_tr: Observed trigger coincidence process.
@@ -148,15 +152,17 @@ def tcp_nll(K_tr: np.ndarray,
             N_E: int,
             tcp_params: TCPParamType,
             idx_start: int = 0) -> float:
-    """Compute the negative log-likelihood (NLL) for the TCP K_tr under the independence assumption.
+    """Compute the negative log-likelihood for the TCP under independence.
 
-    The TCP can be evaluated only at higher thresholds by setting idx_start > 0.
+    The TCP can be evaluated only at higher thresholds by setting
+    idx_start > 0.
 
     Args:
         K_tr: Observed trigger coincidence process.
         N_E: Number of events in the event series.
         tcp_params: Tuple with all TCP parameters.
-        idx_start: Index of the first threshold to evaluate. Defaults to 0.
+        idx_start: Index of the first threshold to evaluate.
+                   Defaults to 0.
 
     Returns:
         The negative log-likelihood.
@@ -176,7 +182,10 @@ def tcp_nll_pval_shuffle(X: np.ndarray,
                          taus: np.ndarray,
                          samples: int = 10000,
                          idx_start: int = 0) -> Tuple[float, float]:
-    """Compute a Monte Carlo p-value from random permutations using the NLL as the test statistic.
+    """Compute a Monte Carlo p-value for the TCP.
+
+    The p-value is computed from random permutations of the event series
+    using the NLL as the test statistic.
 
     Args:
         X: Time series.
@@ -184,7 +193,8 @@ def tcp_nll_pval_shuffle(X: np.ndarray,
         delta: Time tolerance.
         taus: Thresholds (strictly increasing).
         samples: Number of Monte Carlo samples.
-        idx_start: Index of the first threshold to evaluate. Defaults to 0.
+        idx_start: Index of the first threshold to evaluate.
+                   Defaults to 0.
 
     Returns:
         Tuple with the p-value and the test statistic value.
@@ -194,7 +204,7 @@ def tcp_nll_pval_shuffle(X: np.ndarray,
     tcp_params = tcp_params_fit(X, delta, taus)
     nll = tcp_nll(tcp(X, E, delta, taus), N_E, tcp_params, idx_start)
     ge = 0
-    for s in range(samples):
+    for _ in range(samples):
         simul_E = np.random.permutation(E)
         simul_nll = tcp_nll(tcp(X, simul_E, delta, taus), N_E, tcp_params,
                             idx_start)
