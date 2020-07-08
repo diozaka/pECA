@@ -1,7 +1,0 @@
-numba
-numpy
-scipy
-statsmodels
-matplotlib
-pandas
-tqdm
