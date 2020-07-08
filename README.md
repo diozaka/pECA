@@ -4,7 +4,7 @@ An implementation of our pECA approach (Peak Event Coincidence Analysis) to disc
 > Erik Scharwächter, Emmanuel Müller: **Does Terrorism Trigger Online Hate Speech? On the Association of Events and Time Series.**
 > In: Annals of Applied Statistics (accepted for publication) [[arXiv preprint]](https://arxiv.org/abs/2004.14733)
 
-We provide a simple Python module ([peca.py](./peca.py)) that can be used to apply our methodology on arbitrary datasets. We also provide two Jupyter notebooks and some required data files to repreat the anaylses and simulations from our paper ([hatespeech.ipynb](./hatespeech.ipynb) and [simulations.ipynb](./simulations.ipynb)). Please note that due to the randomness in the Monte Carlo simulations, the reported Monte Carlo p-values differ slightly from run to run.
+We provide a simple Python module ([peca.py](./peca.py)) that can be used to apply our methodology on arbitrary datasets. We also provide two Jupyter notebooks and some required data files to repreat the anaylses and simulations from our paper ([hatespeech.ipynb](./demos/hatespeech.ipynb) and [simulations.ipynb](./demos/simulations.ipynb)). Please note that due to the randomness in the Monte Carlo simulations, the reported Monte Carlo p-values differ slightly from run to run.
 
 ## Contact and Citation
 
