@@ -42,7 +42,7 @@ from typing import Tuple
 
 import numba
 import numpy as np
-import scipy.stats as ss
+from scipy import stats
 
 __all__ = [
     "tcp", "tcp_params_fit", "tcp_marginal_expectation", "tcp_marginal_pval",
@@ -98,7 +98,7 @@ def _fit_gev_blockmaxima(timeseries: np.ndarray, blocksize: int) -> Tuple:
         timeseries[t:(t + blocksize)].max()
         for t in range(0, length, blocksize)
     ])
-    return ss.genextreme.fit(blockmaxima)
+    return stats.genextreme.fit(blockmaxima)
 
 
 def tcp_params_fit(timeseries: np.ndarray, delta: int,
@@ -120,7 +120,7 @@ def tcp_params_fit(timeseries: np.ndarray, delta: int,
     """
     gev_params = _fit_gev_blockmaxima(timeseries, delta + 1)
     ps_marginal = np.array(
-        [1. - ss.genextreme.cdf(tau, *gev_params) for tau in taus])
+        [1. - stats.genextreme.cdf(tau, *gev_params) for tau in taus])
     ps_conditional = np.ones_like(taus) * np.nan
     ps_conditional[1:] = np.array(
         [ps_marginal[i] / ps_marginal[i - 1] for i in range(1, len(taus))])
@@ -159,8 +159,8 @@ def tcp_marginal_pval(tcp_: np.ndarray, n_events: int,
         The marginal p-values.
 
     """
-    return (ss.binom.pmf(tcp_, n_events, tcp_params[0]) +
-            ss.binom.sf(tcp_, n_events, tcp_params[0]))
+    return (stats.binom.pmf(tcp_, n_events, tcp_params[0]) +
+            stats.binom.sf(tcp_, n_events, tcp_params[0]))
 
 
 def tcp_nll(tcp_: np.ndarray,
@@ -184,9 +184,10 @@ def tcp_nll(tcp_: np.ndarray,
 
     """
     ps_marginal, ps_conditional = tcp_params
-    return -(ss.binom.logpmf(tcp_[idx_start], n_events, ps_marginal[idx_start])
+    return -(stats.binom.logpmf(tcp_[idx_start], n_events,
+                                ps_marginal[idx_start])
              + np.sum([
-                 ss.binom.logpmf(tcp_[i], tcp_[i - 1], ps_conditional[i])
+                 stats.binom.logpmf(tcp_[i], tcp_[i - 1], ps_conditional[i])
                  for i in range(idx_start + 1, len(ps_marginal))
              ]))
 
