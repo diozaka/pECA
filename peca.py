@@ -38,16 +38,16 @@ Example:
 
 """
 
+__all__ = [
+    "tcp", "tcp_params_fit", "tcp_marginal_expectation", "tcp_marginal_pval",
+    "tcp_nll", "tcp_nll_pval_shuffle"
+]
+
 from typing import Tuple
 
 import numba
 import numpy as np
 from scipy import stats
-
-__all__ = [
-    "tcp", "tcp_params_fit", "tcp_marginal_expectation", "tcp_marginal_pval",
-    "tcp_nll", "tcp_nll_pval_shuffle"
-]
 
 TCPParamType = Tuple[np.ndarray, np.ndarray]
 
