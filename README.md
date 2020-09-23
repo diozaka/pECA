@@ -2,7 +2,7 @@
 An implementation of our pECA approach (Peak Event Coincidence Analysis) to discover statistical relationships between event series and peaks in time series. The methodology is described and analysed in detail in the paper:
 
 > Erik Scharwächter, Emmanuel Müller: **Does Terrorism Trigger Online Hate Speech? On the Association of Events and Time Series.**
-> In: Annals of Applied Statistics (accepted for publication) [[arXiv preprint]](https://arxiv.org/abs/2004.14733)
+> In: Annals of Applied Statistics, Vol. 14, No. 3, 1285-1303, 2020. [[permalink]](http://dx.doi.org/10.1214/20-AOAS1338) [[arXiv preprint]](https://arxiv.org/abs/2004.14733)
 
 We provide a simple Python module ([peca.py](./peca.py)) that can be used to apply our methodology on arbitrary datasets. We also provide two Jupyter notebooks and some required data files to repreat the anaylses and simulations from our paper ([hatespeech.ipynb](./demos/hatespeech.ipynb) and [simulations.ipynb](./demos/simulations.ipynb)). Please note that due to the randomness in the Monte Carlo simulations, the reported Monte Carlo p-values differ slightly from run to run.
 
