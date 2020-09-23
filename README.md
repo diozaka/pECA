@@ -13,10 +13,13 @@ We provide a simple Python module ([peca.py](./peca.py)) that can be used to app
 
 ```
 @article{Scharwachter2020,
+   title = {{Does terrorism trigger online hate speech? On the association of events and time series}},
    author = {Scharw{\"{a}}chter, Erik and M{\"{u}}ller, Emmanuel},
-   journal = {Annals of Applied Statistics (accepted for publication)},
-   title = {{Does Terrorism Trigger Online Hate Speech? On the Association of Events and Time Series}},
-   year = {2020} 
+   journal = {Annals of Applied Statistics},
+   number = {3},
+   pages = {1285--1303},
+   volume = {14},
+   year = {2020}
 }
 ```
 
