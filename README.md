@@ -8,7 +8,7 @@ We provide a simple Python module ([peca.py](./peca.py)) that can be used to app
 
 ## Contact and Citation
 
-* Corresponding author: [Erik Scharwächter](mailto:scharwaechter@bit-uni-bonn.de)
+* Corresponding author: [Erik Scharwächter](mailto:erik.scharwaechter@cs.tu-dortmund.de)
 * Please cite our paper if you use or modify our code for your own work. Here's a `bibtex` snippet:
 
 ```
