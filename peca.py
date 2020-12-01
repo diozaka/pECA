@@ -49,6 +49,8 @@ import numba
 import numpy as np
 from scipy import stats
 
+import matplotlib.pyplot as plt
+
 TCPParamType = Tuple[np.ndarray, np.ndarray]
 
 
@@ -99,6 +101,70 @@ def _fit_gev_blockmaxima(timeseries: np.ndarray, blocksize: int) -> Tuple:
         for t in range(0, length, blocksize)
     ])
     return stats.genextreme.fit(blockmaxima)
+
+
+def plot_gev_diagnostics(timeseries, blocksize, q_crop_percentile=10, title=None):
+    # fit GEV distribution to block maxima
+    length = len(timeseries) - (len(timeseries) % blocksize)
+    blockmaxima = np.array([
+        timeseries[t:(t + blocksize)].max()
+        for t in range(0, length, blocksize)
+    ])
+    gev_params = stats.genextreme.fit(blockmaxima)
+
+    plt.figure(figsize=(8,3))
+    if title is not None:
+        plt.suptitle(title)
+
+    # P-P plot
+    plt.subplot(131)
+    plt.axline((0, 0), (1, 1), lw=1, c='k', ls='--')
+    p_est = stats.genextreme.cdf(np.sort(blockmaxima), *gev_params)
+    p_emp = np.cumsum(np.full(len(blockmaxima), 1./(len(blockmaxima)+1)))
+    plt.scatter(p_est, p_emp, c='orange', marker='.')
+    plt.xlabel('estimate')
+    plt.ylabel('empirical')
+    plt.xticks(np.arange(0, 1.2, 0.2))
+    plt.yticks(np.arange(0, 1.2, 0.2))
+    plt.xlim(0, 1)
+    plt.ylim(0, 1)
+    plt.title('P-P plot')
+    plt.tight_layout()
+
+    # Q-Q plot
+    plt.subplot(132)
+    q_est = stats.genextreme.ppf(np.cumsum(np.full(len(blockmaxima), 1./(len(blockmaxima)+1))), *gev_params)
+    q_emp = np.sort(blockmaxima)
+    q_min = min(q_est.min(), q_emp.min())
+    q_max = min(q_est.max(), q_emp.max())
+    q_crop_idx = int(q_crop_percentile/100.*len(blockmaxima))
+    plt.axline((q_min, q_min), (q_max, q_max), lw=1, c='k', ls='--')
+    plt.scatter(q_est, q_emp, marker='.')
+    plt.gca().add_patch(plt.Rectangle(
+        (q_est[q_crop_idx], q_emp[q_crop_idx]),
+        q_est[-q_crop_idx] - q_est[q_crop_idx],
+        q_emp[-q_crop_idx] - q_emp[q_crop_idx],
+        fill=False
+    ))
+    plt.xlabel('estimate')
+    plt.ylabel('empirical')
+    plt.title('Q-Q plot')
+    plt.tight_layout()
+
+    # Q-Q plot (crop)
+    plt.subplot(133)
+    q_est_crop = q_est[q_crop_idx:-q_crop_idx]
+    q_emp_crop = q_emp[q_crop_idx:-q_crop_idx]
+    q_min_crop = min(q_est_crop.min(), q_emp_crop.min())
+    q_max_crop = min(q_est_crop.max(), q_emp_crop.max())
+    plt.axline((q_min_crop, q_min_crop), (q_max_crop, q_max_crop), lw=1, c='k', ls='--')
+    plt.scatter(q_est_crop, q_emp_crop, marker='.')
+    plt.xlabel('estimate')
+    plt.ylabel('empirical')
+    plt.title(f'Q-Q plot ({100-q_crop_percentile*2:.0f}% crop)')
+    plt.tight_layout()
+
+    plt.show()
 
 
 def tcp_params_fit(timeseries: np.ndarray, delta: int,
