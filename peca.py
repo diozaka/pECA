@@ -103,7 +103,10 @@ def _fit_gev_blockmaxima(timeseries: np.ndarray, blocksize: int) -> Tuple:
     return stats.genextreme.fit(blockmaxima)
 
 
-def plot_gev_diagnostics(timeseries, blocksize, q_crop_percentile=10, title=None):
+def plot_gev_diagnostics(timeseries, blocksize, q_crop_percentile=10, thresh_marker=None, title=None):
+    if thresh_marker is None:
+        thresh_marker = []
+
     # fit GEV distribution to block maxima
     length = len(timeseries) - (len(timeseries) % blocksize)
     blockmaxima = np.array([
@@ -138,6 +141,8 @@ def plot_gev_diagnostics(timeseries, blocksize, q_crop_percentile=10, title=None
     q_min = min(q_est.min(), q_emp.min())
     q_max = min(q_est.max(), q_emp.max())
     q_crop_idx = int(q_crop_percentile/100.*len(blockmaxima))
+    for thresh in thresh_marker:
+        plt.axhline(thresh, lw=1, color='k', alpha=0.1)
     plt.axline((q_min, q_min), (q_max, q_max), lw=1, c='k', ls='--')
     plt.scatter(q_est, q_emp, marker='.')
     plt.gca().add_patch(plt.Rectangle(
@@ -157,6 +162,9 @@ def plot_gev_diagnostics(timeseries, blocksize, q_crop_percentile=10, title=None
     q_emp_crop = q_emp[q_crop_idx:-q_crop_idx]
     q_min_crop = min(q_est_crop.min(), q_emp_crop.min())
     q_max_crop = min(q_est_crop.max(), q_emp_crop.max())
+    for thresh in thresh_marker:
+        if (thresh > q_min_crop) and (thresh < q_max_crop):
+            plt.axhline(thresh, lw=1, color='k', alpha=0.1)
     plt.axline((q_min_crop, q_min_crop), (q_max_crop, q_max_crop), lw=1, c='k', ls='--')
     plt.scatter(q_est_crop, q_emp_crop, marker='.')
     plt.xlabel('estimate')
